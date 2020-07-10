@@ -11,7 +11,6 @@
 
 echo working > test.txt
 
-module load python
 source activate mosdef36
 module load gromacs
 module load lammps

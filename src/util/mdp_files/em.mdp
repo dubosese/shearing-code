@@ -14,5 +14,7 @@ rvdw		    = 1.0		; short-range Van der Waals cut-off
 pbc		        = xyz 		; periodic boundary conditions in xyz
 periodic-molecules = yes 	; periodic amorphous silica
 
+comm-grps = not_frozen
+
 freezegrps = bottom_frozen top_frozen   ; freeze the exterior of each surface
 freezedim = Y Y Y Y Y Y                 ; freeze the exterior of each surface

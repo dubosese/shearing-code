@@ -4,7 +4,8 @@
 #PBS -j oe
 #PBS -l nodes={{ nn }}:ppn=16
 #PBS -l walltime={{ walltime|format_timedelta }}
-#PBS -q low
+#PBS -q standard 
+#PBS -m abe
 
 module load gromacs/5.1.4
 {% endblock %}

@@ -35,14 +35,13 @@ def _setup_logger(logger_name, log_file, level=logging.INFO):
 def _mdrun_str(op_name):
     """return string formatted based on name of operation"""
     msg = (
-        "gmx mdrun -v -deffnm {op} -nt 16 -s {op}.tpr -cpi {op}.cpt "
-        "-ntomp 1 -gpu_id {} &\nwait \n".format("0" * 16, op=op_name)
+        "mdrun_mpi_sp -v -deffnm {op} -s {op}.tpr -cpi {op}.cpt".format(op=op_name)
     )
     return msg
 
 
 def __trjcat_naive_shear(shear_force, file_list, extension):
-    msg = "gmx trjcat -f {} -o shear_{}nN_combined.{}".format(
+    msg = "gmx_sp trjcat -f {} -o shear_{}nN_combined.{}".format(
         " ".join(file_list), shear_force, extension
     )
     return msg
@@ -63,6 +62,7 @@ class CoriEnvironment(flow.environment.DefaultSlurmEnvironment):
 
     hostname_pattern = 'cori'
     template='cori.sh'
+    cores_per_node=64
     
     @classmethod
     def add_args(cls, parser):
@@ -70,7 +70,15 @@ class CoriEnvironment(flow.environment.DefaultSlurmEnvironment):
         parser.add_argument(
                 '-w', "--walltime", type=float, help="Walltime"
                 )
-
+        parser.add_argument(
+                "--name", type=str, help="Operation name"
+                )
+        parser.add_argument(
+                "--queue", type=str, help="Queue type"
+                )
+        parser.add_argument(
+                "--mail", type=str, help="Mail option", default="NONE"
+                )
 
 class Project(FlowProject):
     pass
@@ -95,6 +103,11 @@ def overlaps_fixed(job):
 @Project.label
 def converted_lmp(job):
     return job.isfile("minimize.gro")
+
+
+@Project.label
+def made_ndx(job):
+    return job.isfile("init2.ndx")
 
 
 @Project.label
@@ -173,7 +186,6 @@ def cof_calculated(job):
 
 
 @Project.operation
-@flow.directives(nranks=1)
 @Project.post.isfile("init.top")
 @Project.post.isfile("init.gro")
 @Project.post.isfile("init.lammps")
@@ -330,7 +342,6 @@ def _switch_dir(job):
 
 
 @Project.operation
-@flow.directives(nranks=4)
 @Project.pre.after(is_initialized)
 @Project.pre.after(initialize_system)
 @Project.post.isfile("minimize.xtc")
@@ -339,52 +350,56 @@ def fix_overlaps(job):
     cmds = pathlib.Path(
         signac.get_project().root_directory() + "/src/util/mdp_files"
     )
-    return "cd {}; mpirun -np 4 lmp_mpi -in {}/in.minimize -log {}/minimize.log".format(
+    return "cd {}; srun -n 1 lmp_cori -in {}/in.minimize -log {}/minimize.log".format(
         job.workspace(), str(cmds.absolute()), job.workspace()
     )
 
 
 @Project.operation
-@flow.directives(nranks=1)
 @Project.pre.after(overlaps_fixed)
 @Project.pre.after(fix_overlaps)
 @Project.post.isfile("minimize.gro")
 @flow.cmd
 def lmp_to_gmx(job):
-    msg = "cd {}; echo 0 | mpirun -np 1 gmx trjconv -s init.gro -f minimize.xtc -o minimize.gro  -b 1.0 -e 1.0".format(job.workspace())
+    msg = "cd {}; echo 0 | mpirun -np 1 gmx_sp trjconv -s init.gro -f minimize.xtc -o minimize.gro  -b 1.0 -e 1.0".format(job.workspace())
     return msg
 
 
 @Project.operation
-@flow.directives(nranks=1)
 @Project.pre.after(converted_lmp)
 @Project.pre.after(lmp_to_gmx)
+@Project.post.isfile("init2.ndx")
+@flow.cmd
+def make_ndx(job):
+    '''Potentially integrate into another step'''
+    msg = "cd {}; gmx_sp make_ndx -f minimize.gro -n init.ndx -o init2.ndx < ../../src/second-ndx.txt".format(job.workspace())
+    return msg
+
+
+@Project.operation
+@Project.pre.after(made_ndx)
+@Project.pre.after(make_ndx)
 @Project.post.isfile("em.tpr")
 @flow.cmd
 def em_grompp(job):
     em_mdp_path = pathlib.Path(
         signac.get_project().root_directory() + "/src/util/mdp_files/em.mdp"
     )
-    #msg = "{}".format(job.workspace())
-    msg = "cd {}; mpirun -np 1 gmx grompp -f {} -c minimize.gro -p init.top \
-           -n init.ndx -o em.tpr -maxwarn 1".format(job.workspace(), em_mdp_path)
+    msg = "cd {}; gmx_sp grompp -f {} -c minimize.gro -p init.top -n init2.ndx -o em.tpr -maxwarn 1".format(job.workspace(), em_mdp_path)
     return msg
 
 
 @Project.operation
-@flow.directives(nranks=32)
-@flow.directives(ngpu=1)
 @Project.pre.after(is_em_grompp)
 @Project.pre.after(em_grompp)
 @Project.post.isfile("em.gro")
 @flow.cmd
 def mdrun_em(job):
     msg = _mdrun_str("em")
-    return "cd {}; {}".format(job.workspace(), msg)
+    return "cd {}; srun -n 1 {} -ntomp 64".format(job.workspace(), msg)
 
 
 @Project.operation
-@flow.directives(nranks=1)
 @Project.pre.after(mdrun_em)
 @Project.post.isfile("nvt.tpr")
 @flow.cmd
@@ -392,59 +407,55 @@ def nvt_equil_grompp(job):
     nvt_mdp_path = pathlib.Path(
         signac.get_project().root_directory() + "/src/util/mdp_files/nvt.mdp"
     )
-    msg = "cd {}; mpirun -np 1 gmx grompp -f {} -c {} -p {} -n {} -o {} -maxwarn 1".format(
+    msg = "cd {}; gmx_sp grompp -f {} -c {} -p {} -n {} -o {} -maxwarn 1".format(
         job.workspace(),
         nvt_mdp_path,
         "em.gro",
         "init.top",
-        "init.ndx",
+        "init2.ndx",
         "nvt.tpr",
     )
     return msg
 
 
 @Project.operation
-@flow.directives(nranks=32)
-#@flow.directives(ngpu=1)
 @Project.pre.after(is_nvt_grompp)
 @Project.pre.after(nvt_equil_grompp)
 @Project.post.isfile("nvt.gro")
 @flow.cmd
 def mdrun_nvt(job):
     msg = _mdrun_str("nvt")
-    return "cd {}; {}".format(job.workspace(), msg)
+    return "cd {}; srun -n 1 {} -ntomp 64".format(job.workspace(), msg)
 
 
 @Project.operation
-@flow.directives(nranks=1)
 @Project.pre.after(mdrun_nvt)
 @Project.post.isfile("compress.tpr")
 @flow.cmd
 def compress_grompp(job):
     compress_mdp_path = pathlib.Path(
         signac.get_project().root_directory()
-        + "/src/util/mdp_files/compress.mdp"
+        + "/src/util/mdp_files/test-compress.mdp"
     )
-    msg = "cd {}; mpirun -np 1 gmx grompp -f {} -c {} -p {} -n {} -o {} -maxwarn 1".format(
+    msg = "cd {}; gmx_sp grompp -f {} -c {} -p {} -n {} -o {} -maxwarn 2".format(
         job.workspace(),
         compress_mdp_path,
         "nvt.gro",
         "init.top",
-        "init.ndx",
+        "init2.ndx",
         "compress.tpr",
     )
     return msg
 
 
 @Project.operation
-@flow.directives(nranks=32)
-@flow.directives(ngpu=1)
+@flow.directives(nranks=64)
 @Project.pre.after(compress_grompp)
 @Project.post.isfile("compress.gro")
 @flow.cmd
 def mdrun_compress(job):
     msg = _mdrun_str("compress")
-    return "cd {}; {}".format(job.workspace(), msg)
+    return "cd {}; srun -n 1 -v {} -ntomp 64".format(job.workspace(), msg)
 
 
 @Project.operation
@@ -457,26 +468,24 @@ def shear_5nN_grompp(job):
         signac.get_project().root_directory()
         + "/src/util/mdp_files/shear_5nN.mdp"
     )
-    msg = "cd {}; mpirun -np 1 gmx grompp -f {} -c {} -p {} -n {} -o {} -maxwarn 1".format(
+    msg = "cd {}; mpirun -np 1 gmx_sp grompp -f {} -c {} -p {} -n {} -o {} -maxwarn 1".format(
     	job.workspace(),
         shear_5nN_mdp_path,
         "compress.gro",
         "init.top",
-        "init.ndx",
+        "init2.ndx",
         "shear_5nN.tpr",
     )
     return msg
 
 
 @Project.operation
-@flow.directives(nranks=32)
-@flow.directives(ngpu=1)
 @Project.pre.after(shear_5nN_grompp)
 @Project.post(shear_5nN_completed)
 @flow.cmd
 def mdrun_shear_5nN(job):
-    msg = _mdrun_str("shear_5nN")
-    return "cd {}; gmx mdrun -s shear_5nN.tpr -deffnm shear_5nN -cpi shear_5nN.cpt -cpo shear_5nN.cpt -noappend -ntomp 1 -nt 16 -gpu_id 0000000000000000 &\nwait \n".format(
+    # msg = _mdrun_str("shear_5nN")
+    return "cd {}; srun -n 1 -v mdrun_mpi_sp -v -s shear_5nN.tpr -deffnm shear_5nN -cpi shear_5nN.cpt -cpo shear_5nN.cpt -noappend -ntomp 64".format(
         job.workspace()
     )
     # return "cd {}; aprun -n 16 {} -append".format(job.workspace(), msg)
@@ -492,27 +501,25 @@ def shear_15nN_grompp(job):
         signac.get_project().root_directory()
         + "/src/util/mdp_files/shear_15nN.mdp"
     )
-    msg = "cd {}; mpirun -np 1 gmx grompp -f {} -c {} -p {} -n {} -o {} -maxwarn 1".format(
+    msg = "cd {}; mpirun -np 1 gmx_sp grompp -f {} -c {} -p {} -n {} -o {} -maxwarn 1".format(
         job.workspace(),
         shear_15nN_mdp_path,
         "compress.gro",
         "init.top",
-        "init.ndx",
+        "init2.ndx",
         "shear_15nN.tpr",
     )
     return msg
 
 
 @Project.operation
-@flow.directives(nranks=32)
-@flow.directives(ngpu=1)
 @Project.pre.after(is_nvt_grompp)
 @Project.pre.after(shear_15nN_grompp)
 @Project.post(shear_15nN_completed)
 @flow.cmd
 def mdrun_shear_15nN(job):
-    msg = _mdrun_str("shear_15nN")
-    return "cd {}; gmx mdrun -s shear_15nN.tpr -deffnm shear_15nN -cpi shear_15nN.cpt -cpo shear_15nN.cpt -noappend -ntomp 1 -nt 16 -gpu_id 0000000000000000 &\nwait \n".format(
+    # msg = _mdrun_str("shear_15nN")
+    return "cd {}; srun -n 1 mdrun_mpi_sp -s shear_15nN.tpr -deffnm shear_15nN -cpi shear_15nN.cpt -cpo shear_15nN.cpt -noappend -ntomp 64".format(
         job.workspace()
     )
     # return "cd {}; aprun -n 16 {} -append".format(job.workspace(), msg)
@@ -528,34 +535,31 @@ def shear_25nN_grompp(job):
         signac.get_project().root_directory()
         + "/src/util/mdp_files/shear_25nN.mdp"
     )
-    msg = "cd {}; mpirun -np 1 gmx grompp -f {} -c {} -p {} -n {} -o {} -maxwarn 1".format(
+    msg = "cd {}; mpirun -np 1 gmx_sp grompp -f {} -c {} -p {} -n {} -o {} -maxwarn 1".format(
         job.workspace(),
         shear_25nN_mdp_path,
         "compress.gro",
         "init.top",
-        "init.ndx",
+        "init2.ndx",
         "shear_25nN.tpr",
     )
     return msg
 
 
 @Project.operation
-@flow.directives(nranks=32)
-@flow.directives(ngpu=1)
 @Project.pre.after(is_nvt_grompp)
 @Project.pre.after(shear_25nN_grompp)
 @Project.post(shear_25nN_completed)
 @flow.cmd
 def mdrun_shear_25nN(job):
     # msg = _mdrun_str('shear_25nN')
-    return "cd {}; gmx mdrun -s shear_25nN.tpr -deffnm shear_25nN -cpi shear_25nN.cpt -cpo shear_25nN.cpt -noappend -ntomp 1 -nt 16 -gpu_id 0000000000000000 &\nwait \n".format(
+    return "cd {}; srun -n 1 mdrun_mpi_sp -s shear_25nN.tpr -deffnm shear_25nN -cpi shear_25nN.cpt -cpo shear_25nN.cpt -noappend -ntomp 64".format(
         job.workspace()
     )
     # return "cd {}; aprun -n 16 {} -append".format(job.workspace(), msg)
 
 
 @Project.operation
-@flow.directives(nranks=1)
 @Project.pre.after(shear_5nN_completed)
 @Project.pre.after(mdrun_shear_5nN)
 @Project.post.isfile("shear_5nN_combined.xtc")
@@ -567,7 +571,6 @@ def shear_5nN_xtc_concat(job):
 
 
 @Project.operation
-@flow.directives(nranks=1)
 @Project.pre.after(shear_5nN_completed)
 @Project.pre.after(mdrun_shear_5nN)
 @Project.post.isfile("shear_5nN_combined.trr")
@@ -579,7 +582,6 @@ def shear_5nN_trr_concat(job):
 
 
 @Project.operation
-@flow.directives(nranks=1)
 @Project.pre.after(shear_15nN_completed)
 @Project.pre.after(mdrun_shear_15nN)
 @Project.post.isfile("shear_15nN_combined.xtc")
@@ -641,7 +643,7 @@ def calc_friction_system(job):
     for load in [5, 15, 25]:
         trr_file = "{}/shear_{}nN_combined.trr".format(job.workspace(), load)
         out_file = "{}/friction_{}nN.txt".format(job.workspace(), load)
-        ndx_file = "{}/init.ndx".format(job.workspace())
+        ndx_file = "{}/init2.ndx".format(job.workspace())
         calc_friction(
             trr_filename=trr_file,
             output_filename=out_file,

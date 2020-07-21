@@ -674,9 +674,9 @@
   <Type name="opls_676" class="opls_676" element="C" mass="12.011"/>
   <Type name="opls_677" class="opls_677" element="C" mass="12.011"/>
   <!--
-    Parameters for the a-carbon in alkyl pyrroles (opls_678 and opls_679)
+    Parameters for the α-carbon in alkyl pyrroles (opls_678 and opls_679)
     do not appear to have a published source. It appears with OPLS that for
-    most a-carbons the epsilon and sigma used are the same as for alkane
+    most α-carbons the epsilon and sigma used are the same as for alkane
     carbons and the charge is simply adjusted to preserve molecular charge
     neutrality.
   -->

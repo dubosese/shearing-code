@@ -13,6 +13,7 @@
 module unload gromacs lammps
 module load gromacs/2020.1.knl lammps/2018.12.12-knl openmpi
 conda activate mosdef36
+PYTHONIOENCODING=UTF-8
 
 
 {% if operation.directives.omp_num_threads %}

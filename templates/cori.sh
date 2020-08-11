@@ -6,13 +6,12 @@
 #SBATCH --ntasks=64
 #SBATCH --time={{ walltime|format_timedelta }}
 #SBATCH -C knl
-#SBATCH --error=error.err
 #SBATCH -q {{ queue }}
-#SBATCH --mail-type={{ mail }}
+#SBATCH --mail-type=END,FAIL
 
 module unload gromacs lammps
-module load gromacs/2020.1.knl lammps/2018.12.12-knl openmpi
-conda activate mosdef36
+module load gromacs/2020.2.knl lammps openmpi
+conda activate screening
 export PYTHONIOENCODING=UTF-8
 {% endblock %}
 {% block body%}

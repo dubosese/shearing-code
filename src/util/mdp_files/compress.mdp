@@ -38,7 +38,11 @@ pull-ngroups          = 2
 pull-ncoords          = 1
 
 pull-group1-name      = bottom_surface
+pull-group1-pbcatom   = 2000
 pull-group2-name      = top_surface
+pull-group2-pbcatom   = 8000
+
+pull-pbc-ref-prev-step-com = yes
 
 pull-print-components  = yes
 

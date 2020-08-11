@@ -36,4 +36,4 @@ thermo 100
 dump traj all xtc 1000 minimize.xtc
 dump_modify traj unwrap yes
 
-run 10000
+run 30000

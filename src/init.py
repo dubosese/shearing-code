@@ -13,37 +13,35 @@ import signac
 
 logging.basicConfig(filename='init.log', filemode='w', level=logging.INFO)
 
-'''
-NOTE: does not include isopropyl benzene and biphenyl due to charge issue
 
-'''
-terminal_groups_A = ['acetyl', 'amino', 'carboxyl', 'cyano', 
-                     'cyclopropyl', 'difluoromethyl', 'ethylene', 'fluorophenyl',
-                     'formyl','hydroxyl', 'isopropyl',
-                     'methoxy', 'methyl', 'nitro', 'nitrophenyl', 'pentafluorophenyl',
-                     'perfluoromethyl', 'phenol', 'phenyl', 'pyrrole', 'toluene', 
-                     'triazole']
+terminal_groups_A = ['acetyl','amino','benzoicacid','biphenyl','carboxyl',
+                     'cyano','cyclopropyl','difluoromethyl','dihydroxyphenyl', 
+                     'ethylene','fluorophenyl','formyl','hydroxyl', 'isopropyl',
+                     'isopropylbenzene','methoxy', 'methyl', 'nitro', 'nitrophenyl',
+                     'pentafluorophenyl','perfluoromethyl','phenol','phenyl',
+                     'pyrrole', 'toluene','triazole']
 
-terminal_groups_B = ['acetyl', 'amino', 'carboxyl', 'cyano', 
-                     'cyclopropyl', 'difluoromethyl', 'ethylene', 'fluorophenyl',
-                     'formyl','hydroxyl', 'isopropyl',
-                     'methoxy', 'methyl', 'nitro', 'nitrophenyl', 'pentafluorophenyl',
-                     'perfluoromethyl', 'phenol', 'phenyl', 'pyrrole', 'toluene', 
-                     'triazole']
+terminal_groups_B = ['acetyl','amino','benzoicacid','biphenyl','carboxyl',
+                     'cyano','cyclopropyl','difluoromethyl','dihydroxyphenyl', 
+                     'ethylene','fluorophenyl','formyl','hydroxyl', 'isopropyl',
+                     'isopropylbenzene','methoxy', 'methyl', 'nitro', 'nitrophenyl',
+                     'pentafluorophenyl','perfluoromethyl','phenol','phenyl',
+                     'pyrrole', 'toluene','triazole']
 
-terminal_groups_C = ['acetyl', 'amino', 'carboxyl', 'cyano', 
-                     'cyclopropyl', 'difluoromethyl', 'ethylene', 'fluorophenyl',
-                     'formyl','hydroxyl', 'isopropyl',
-                     'methoxy', 'methyl', 'nitro', 'nitrophenyl', 'pentafluorophenyl',
-                     'perfluoromethyl', 'phenol', 'phenyl', 'pyrrole', 'toluene', 
-                     'triazole']
+terminal_groups_C = ['acetyl','amino','benzoicacid','biphenyl','carboxyl',
+                     'cyano','cyclopropyl','difluoromethyl','dihydroxyphenyl', 
+                     'ethylene','fluorophenyl','formyl','hydroxyl', 'isopropyl',
+                     'isopropylbenzene','methoxy', 'methyl', 'nitro', 'nitrophenyl',
+                     'pentafluorophenyl','perfluoromethyl','phenol','phenyl',
+                     'pyrrole', 'toluene','triazole']
 
-terminal_groups_D = ['acetyl', 'amino', 'carboxyl', 'cyano',
-                     'cyclopropyl', 'difluoromethyl', 'ethylene', 'fluorophenyl',
-                     'formyl','hydroxyl', 'isopropyl',
-                     'methoxy', 'methyl', 'nitro', 'nitrophenyl', 'pentafluorophenyl',
-                     'perfluoromethyl', 'phenol', 'phenyl', 'pyrrole', 'toluene',
-                     'triazole']
+terminal_groups_D = ['acetyl','amino','benzoicacid','biphenyl','carboxyl',
+                     'cyano','cyclopropyl','difluoromethyl','dihydroxyphenyl', 
+                     'ethylene','fluorophenyl','formyl','hydroxyl', 'isopropyl',
+                     'isopropylbenzene','methoxy', 'methyl', 'nitro', 'nitrophenyl',
+                     'pentafluorophenyl','perfluoromethyl','phenol','phenyl',
+                     'pyrrole', 'toluene','triazole']
+
 
 # Initialize the project
 def main(args, random_seed):

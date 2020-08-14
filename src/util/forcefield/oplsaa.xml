@@ -245,7 +245,7 @@
   <Type name="opls_242" class="opls_242" element="C" mass="12.011"/>
   <Type name="opls_243" class="CT" element="C" mass="12.011" def="[C;X4](H)(H)(H)[N;X3](C)(C)" desc="C on N: tertiary  N-Me amide" doi="10.1021/ja9621760"/>
   <Type name="opls_244" class="opls_244" element="C" mass="12.011"/>
-  <Type name="opls_245" class="opls_245" element="C" mass="12.011"/>
+  <Type name="opls_245" class="opls_245" element="C" mass="12.011" def="[C][N;X3](C)([!H])" desc="C on N: tertiary  N-CH2R amide"/>
   <Type name="opls_246" class="opls_246" element="C" mass="12.011"/>
   <Type name="opls_247" class="opls_247" element="C" mass="12.011"/>
   <Type name="opls_248" class="opls_248" element="O" mass="15.9994"/>
@@ -545,8 +545,8 @@
   <Type name="opls_545" class="H"  element="H" mass="1.00800"  def="H[N;%opls_542]" desc="H1 in pyrrole"/>
   <Type name="opls_546" class="HA" element="H" mass="1.00800"  def="H[C;%opls_543]" desc="H2 in pyrrole" overrides="opls_144"/>
   <Type name="opls_547" class="HA" element="H" mass="1.00800"  def="H[C;%opls_544]" desc="H3 in pyrrole" overrides="opls_144"/>
-  <Type name="opls_548" class="opls_548" element="N" mass="14.0067"/>
-  <Type name="opls_549" class="opls_549" element="N" mass="14.0067"/>
+  <Type name="opls_548" class="opls_548" element="N" mass="14.0067" def="[N;X3;r5](C)(N)" desc="N1 in pyrazole" overrides="opls_239"/>
+  <Type name="opls_549" class="opls_549" element="N" mass="14.0067" def="[N;X2;r5]([N;X3;r5])([C;X3;r5])" desc="N2 in pyrazole"/>
   <Type name="opls_550" class="opls_550" element="C" mass="12.011"/>
   <Type name="opls_551" class="opls_551" element="C" mass="12.011"/>
   <Type name="opls_552" class="opls_552" element="C" mass="12.011"/>
@@ -555,10 +555,10 @@
   <Type name="opls_555" class="opls_555" element="H" mass="1.008"/>
   <Type name="opls_556" class="opls_556" element="H" mass="1.008"/>
   <Type name="opls_557" class="opls_557" element="N" mass="14.0067"/>
-  <Type name="opls_558" class="opls_558" element="C" mass="12.011"/>
+  <Type name="opls_558" class="opls_558" element="C" mass="12.011" desc="C2 in imidazole"/>
   <Type name="opls_559" class="opls_559" element="N" mass="14.0067"/>
-  <Type name="opls_560" class="opls_560" element="C" mass="12.011"/>
-  <Type name="opls_561" class="opls_561" element="C" mass="12.011"/>
+  <Type name="opls_560" class="opls_560" element="C" mass="12.011" desc="C4 in imidazole"/>
+  <Type name="opls_561" class="opls_561" element="C" mass="12.011" desc="C5 in imidazole"/>
   <Type name="opls_562" class="opls_562" element="H" mass="1.008"/>
   <Type name="opls_563" class="opls_563" element="H" mass="1.008"/>
   <Type name="opls_564" class="opls_564" element="H" mass="1.008"/>
@@ -638,9 +638,9 @@
   <Type name="opls_638" class="opls_638" element="H" mass="1.008"/>
   <Type name="opls_639" class="opls_639" element="H" mass="1.008"/>
   <Type name="opls_640" class="opls_640" element="H" mass="1.008"/>
-  <Type name="opls_641" class="opls_641" element="N" mass="14.0067"/>
-  <Type name="opls_642" class="opls_642" element="C" mass="12.011"/>
-  <Type name="opls_643" class="opls_643" element="H" mass="1.008"/>
+  <Type name="opls_641" class="opls_641" element="N" mass="14.0067" desc="N in 1,3,5-triazine"/>
+  <Type name="opls_642" class="opls_642" element="C" mass="12.011" desc="C in 1,3,5-triazine"/>
+  <Type name="opls_643" class="opls_643" element="H" mass="1.008" desc="H in 1,3,5-triazine"/>
   <Type name="opls_644" class="opls_644" element="C" mass="12.011"/>
   <Type name="opls_645" class="opls_645" element="C" mass="12.011"/>
   <Type name="opls_646" class="opls_646" element="N" mass="14.0067"/>
@@ -825,6 +825,10 @@
   <Type name="opls_1008" class="OH" element="O" mass="15.9994" def="[O;X2]([Si;%opls_1002])H" overrides="opls_154,opls_1001"/>
   <Type name="opls_1009" class="HO" element="H" mass="1.00800" def="[H;X1](O[Si;%opls_1002])" overrides="opls_155"/>
   <Type name="opls_1010" class="EP" element="_EP" mass="0.00"/>
+  <Type name="opls_1011" class="CT" element="C" mass="12.01100" def="[C;X3;r6]1[C;X3;r6][C;X3;r6][C;X3;r6]([C;X3](O)O)[C;X3;r6][C;X3;r6]1" desc="benzoicacid" overrides="opls_145"/>
+  <Type name="opls_520B" class="NC" element="N" mass="14.0067" desc="N3/top N in triazole" def="[N;X2;r5]1[C;X3;r5][N;X2;r5][N;X3;r5][C;X3;r5]1"/>
+  <Type name="opls_558B" class="CR" element="C" mass="12.011" desc="C2/C4 in triazole" def="[C;X3;r5](N)N"/>
+  <Type name="opls_245B" class="CT" element="C" mass="12.011" desc="C on N: N1 of triazole, QUESTIONABLE" def="[C;X4][N;X3;r5]" overrides="opls_245"/>
  </AtomTypes>
  <HarmonicBondForce>
   <Bond class1="OW" class2="HW" length="0.09572" k="502080.0"/>
@@ -3412,6 +3416,7 @@
   <Atom type="opls_243" charge="-0.11" sigma="0.35" epsilon="0.276144"/>
   <Atom type="opls_244" charge="0.08" sigma="0.35" epsilon="0.276144"/>
   <Atom type="opls_245" charge="-0.05" sigma="0.35" epsilon="0.276144"/>
+  <Atom type="opls_245B" charge="-0.05" sigma="0.35" epsilon="0.276144"/>
   <Atom type="opls_246" charge="0.01" sigma="0.35" epsilon="0.276144"/>
   <Atom type="opls_247" charge="0.142" sigma="0.375" epsilon="0.43932"/>
   <Atom type="opls_248" charge="-0.39" sigma="0.296" epsilon="0.87864"/>
@@ -3684,6 +3689,7 @@
   <Atom type="opls_517" charge="-0.03" sigma="0.355" epsilon="0.317984"/>
   <Atom type="opls_518" charge="0.085" sigma="0.355" epsilon="0.317984"/>
   <Atom type="opls_520" charge="-0.678" sigma="0.325" epsilon="0.71128"/>
+  <Atom type="opls_520B" charge="-0.563" sigma="0.325" epsilon="0.71128"/>
   <Atom type="opls_521" charge="0.473" sigma="0.355" epsilon="0.29288"/>
   <Atom type="opls_522" charge="-0.447" sigma="0.355" epsilon="0.29288"/>
   <Atom type="opls_523" charge="0.227" sigma="0.355" epsilon="0.29288"/>
@@ -3722,6 +3728,7 @@
   <Atom type="opls_556" charge="0.135" sigma="0.242" epsilon="0.12552"/>
   <Atom type="opls_557" charge="-0.257" sigma="0.325" epsilon="0.71128"/>
   <Atom type="opls_558" charge="0.275" sigma="0.355" epsilon="0.29288"/>
+  <Atom type="opls_558B" charge="0.275" sigma="0.355" epsilon="0.29288"/>
   <Atom type="opls_559" charge="-0.563" sigma="0.325" epsilon="0.71128"/>
   <Atom type="opls_560" charge="0.185" sigma="0.355" epsilon="0.29288"/>
   <Atom type="opls_561" charge="-0.286" sigma="0.355" epsilon="0.29288"/>
@@ -3991,5 +3998,6 @@
   <Atom type="opls_1008" charge="-0.215" sigma="0.3" epsilon="0.71128"/>
   <Atom type="opls_1009" charge="0.215" sigma="0.0" epsilon="0.0"/>
   <Atom type="opls_1010" charge="0.0" sigma="0.0" epsilon="0.0"/>
+  <Atom type="opls_1011" charge="0.0" sigma="0.355" epsilon="0.29288"/>
  </NonbondedForce>
 </ForceField>

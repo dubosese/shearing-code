@@ -5,7 +5,7 @@ nstxout         = 5000
 nstvout         = 5000
 nstlog          = 1000
 nstenergy       = 1000
-nstxout-compressed = 2000
+nstxout-compressed = 1000
 
 comm_mode       = None
 

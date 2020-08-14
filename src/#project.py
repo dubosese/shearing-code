@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import textwrap
 import glob
 import json
@@ -18,7 +19,7 @@ from atools.fileio import write_monolayer_ndx, read_ndx
 from atools.lib.chains import Alkylsilane
 from atools.recipes import DualSurface, SilicaInterface, SurfaceMonolayer
 from util.index_groups import generate_index_groups
-from atools.lib.chains.alkylsilane_internal_plus import Alkylsilane as AlkylsilaneInternalplus
+from atools.lib.chains.alkylsilane_internal import Alkylsilane as AlkylsilaneInternal
 
 
 def _setup_logger(logger_name, log_file, level=logging.INFO):
@@ -190,6 +191,7 @@ def cof_calculated(job):
 @Project.post.isfile("init.gro")
 @Project.post.isfile("init.lammps")
 @Project.post.isfile("init.ndx")
+@flow.with_job
 def initialize_system(job):
     """ Generate the monolayer surfaces, parametrize, save LAMMPS, GRO, TOP.
     """
@@ -224,16 +226,16 @@ def initialize_system(job):
     Generate prototype of functionalized alkylsilane chain
     ------------------------------------------------------
     """
-    chain_prototype_a = AlkylsilaneInternalplus(
+    chain_prototype_a = AlkylsilaneInternal(
         chain_length=chainlength_a, internal_group=backbone_1, locations=locations, terminal_group=terminal_groups[0]
     )
-    chain_prototype_b = AlkylsilaneInternalplus(
+    chain_prototype_b = AlkylsilaneInternal(
         chain_length=chainlength_b, internal_group=backbone_2, locations=locations, terminal_group=terminal_groups[1]
     )
-    chain_prototype_c = AlkylsilaneInternalplus(
+    chain_prototype_c = AlkylsilaneInternal(
         chain_length=chainlength_c, internal_group=backbone_1, locations=locations, terminal_group=terminal_groups[2]
     )
-    chain_prototype_d = AlkylsilaneInternalplus(
+    chain_prototype_d = AlkylsilaneInternal(
 	chain_length=chainlength_d, internal_group=backbone_2, locations=locations, terminal_group=terminal_groups[3]
     )
     """
@@ -342,7 +344,6 @@ def _switch_dir(job):
 
 
 @Project.operation
-@Project.pre.after(is_initialized)
 @Project.pre.after(initialize_system)
 @Project.post.isfile("minimize.xtc")
 @flow.cmd
@@ -356,7 +357,6 @@ def fix_overlaps(job):
 
 
 @Project.operation
-@Project.pre.after(overlaps_fixed)
 @Project.pre.after(fix_overlaps)
 @Project.post.isfile("minimize.gro")
 @flow.cmd
@@ -366,7 +366,6 @@ def lmp_to_gmx(job):
 
 
 @Project.operation
-@Project.pre.after(converted_lmp)
 @Project.pre.after(lmp_to_gmx)
 @Project.post.isfile("init2.ndx")
 @flow.cmd
@@ -377,7 +376,6 @@ def make_ndx(job):
 
 
 @Project.operation
-@Project.pre.after(made_ndx)
 @Project.pre.after(make_ndx)
 @Project.post.isfile("em.tpr")
 @flow.cmd
@@ -390,7 +388,6 @@ def em_grompp(job):
 
 
 @Project.operation
-@Project.pre.after(is_em_grompp)
 @Project.pre.after(em_grompp)
 @Project.post.isfile("em.gro")
 @flow.cmd
@@ -419,7 +416,6 @@ def nvt_equil_grompp(job):
 
 
 @Project.operation
-@Project.pre.after(is_nvt_grompp)
 @Project.pre.after(nvt_equil_grompp)
 @Project.post.isfile("nvt.gro")
 @flow.cmd
@@ -449,7 +445,6 @@ def compress_grompp(job):
 
 
 @Project.operation
-@flow.directives(nranks=64)
 @Project.pre.after(compress_grompp)
 @Project.post.isfile("compress.gro")
 @flow.cmd
@@ -459,7 +454,6 @@ def mdrun_compress(job):
 
 
 @Project.operation
-@flow.directives(nranks=1)
 @Project.pre.after(mdrun_compress)
 @Project.post.isfile("shear_5nN.tpr")
 @flow.cmd
@@ -484,15 +478,12 @@ def shear_5nN_grompp(job):
 @Project.post(shear_5nN_completed)
 @flow.cmd
 def mdrun_shear_5nN(job):
-    # msg = _mdrun_str("shear_5nN")
     return "cd {}; srun -n 1 -v mdrun_mpi_sp -v -s shear_5nN.tpr -deffnm shear_5nN -cpi shear_5nN.cpt -cpo shear_5nN.cpt -noappend -ntomp 64".format(
         job.workspace()
     )
-    # return "cd {}; aprun -n 16 {} -append".format(job.workspace(), msg)
 
 
 @Project.operation
-@flow.directives(nranks=1)
 @Project.pre.after(mdrun_compress)
 @Project.post.isfile("shear_15nN.tpr")
 @flow.cmd
@@ -513,7 +504,6 @@ def shear_15nN_grompp(job):
 
 
 @Project.operation
-@Project.pre.after(is_nvt_grompp)
 @Project.pre.after(shear_15nN_grompp)
 @Project.post(shear_15nN_completed)
 @flow.cmd
@@ -522,11 +512,9 @@ def mdrun_shear_15nN(job):
     return "cd {}; srun -n 1 mdrun_mpi_sp -s shear_15nN.tpr -deffnm shear_15nN -cpi shear_15nN.cpt -cpo shear_15nN.cpt -noappend -ntomp 64".format(
         job.workspace()
     )
-    # return "cd {}; aprun -n 16 {} -append".format(job.workspace(), msg)
 
 
 @Project.operation
-@flow.directives(nranks=1)
 @Project.pre.after(mdrun_compress)
 @Project.post.isfile("shear_25nN.tpr")
 @flow.cmd
@@ -547,7 +535,6 @@ def shear_25nN_grompp(job):
 
 
 @Project.operation
-@Project.pre.after(is_nvt_grompp)
 @Project.pre.after(shear_25nN_grompp)
 @Project.post(shear_25nN_completed)
 @flow.cmd
@@ -556,11 +543,9 @@ def mdrun_shear_25nN(job):
     return "cd {}; srun -n 1 mdrun_mpi_sp -s shear_25nN.tpr -deffnm shear_25nN -cpi shear_25nN.cpt -cpo shear_25nN.cpt -noappend -ntomp 64".format(
         job.workspace()
     )
-    # return "cd {}; aprun -n 16 {} -append".format(job.workspace(), msg)
 
 
 @Project.operation
-@Project.pre.after(shear_5nN_completed)
 @Project.pre.after(mdrun_shear_5nN)
 @Project.post.isfile("shear_5nN_combined.xtc")
 @flow.cmd
@@ -571,7 +556,6 @@ def shear_5nN_xtc_concat(job):
 
 
 @Project.operation
-@Project.pre.after(shear_5nN_completed)
 @Project.pre.after(mdrun_shear_5nN)
 @Project.post.isfile("shear_5nN_combined.trr")
 @flow.cmd
@@ -582,7 +566,6 @@ def shear_5nN_trr_concat(job):
 
 
 @Project.operation
-@Project.pre.after(shear_15nN_completed)
 @Project.pre.after(mdrun_shear_15nN)
 @Project.post.isfile("shear_15nN_combined.xtc")
 @flow.cmd
@@ -593,8 +576,6 @@ def shear_15nN_xtc_concat(job):
 
 
 @Project.operation
-@flow.directives(nranks=1)
-@Project.pre.after(shear_15nN_completed)
 @Project.pre.after(mdrun_shear_15nN)
 @Project.post.isfile("shear_15nN_combined.trr")
 @flow.cmd
@@ -605,8 +586,6 @@ def shear_15nN_trr_concat(job):
 
 
 @Project.operation
-@flow.directives(nranks=1)
-@Project.pre.after(shear_25nN_completed)
 @Project.pre.after(mdrun_shear_25nN)
 @Project.post.isfile("shear_25nN_combined.xtc")
 @flow.cmd
@@ -617,9 +596,7 @@ def shear_25nN_xtc_concat(job):
 
 
 @Project.operation
-@flow.directives(nranks=1)
-@Project.pre.after(shear_25nN_completed)
-@Project.pre.after(mdrun_shear_15nN)
+@Project.pre.after(mdrun_shear_25nN)
 @Project.post.isfile("shear_25nN_combined.trr")
 @flow.cmd
 def shear_25nN_trr_concat(job):
@@ -629,7 +606,6 @@ def shear_25nN_trr_concat(job):
 
 
 @Project.operation
-@flow.directives(nranks=1)
 @Project.pre.after(shear_5nN_trr_concat)
 @Project.pre.after(shear_5nN_xtc_concat)
 @Project.pre.after(shear_15nN_trr_concat)
@@ -652,8 +628,6 @@ def calc_friction_system(job):
 
 
 @Project.operation
-@flow.directives(nranks=1)
-@Project.pre.after(friction_calculated)
 @Project.pre.after(calc_friction_system)
 @Project.post(cof_calculated)
 def calc_cof(job):

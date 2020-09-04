@@ -35,7 +35,7 @@ def _setup_logger(logger_name, log_file, level=logging.INFO):
 def _mdrun_str(op_name):
     """return string formatted based on name of operation"""
     msg = (
-        "mdrun_mpi_sp -v -deffnm {op} -s {op}.tpr -cpi {op}.cpt -cpo {op}.cpt -cpt 10 -ntomp 64".format(op=op_name)
+        "mdrun_mpi_dp -v -deffnm {op} -s {op}.tpr -cpi {op}.cpt -cpo {op}.cpt -cpt 10 -ntomp 64".format(op=op_name)
     )
     return msg
 
@@ -321,8 +321,8 @@ def fix_overlaps(job):
 @flow.cmd
 def convert_and_ndx(job):
     second_ndx = pathlib.Path(signac.get_project().root_directory() + "/src/second-ndx.txt")
-    convert = "echo 0 | gmx_sp trjconv -s init.gro -f minimize.xtc -o minimize.gro -b 1.0 -e 1.0"
-    ndx = "gmx_sp make_ndx -f minimize.gro -n init.ndx -o init2.ndx < {}".format(second_ndx)
+    convert = "echo 0 | gmx_dp trjconv -s init.gro -f minimize.xtc -o minimize.gro -b 1.0 -e 1.0"
+    ndx = "gmx_dp make_ndx -f minimize.gro -n init.ndx -o init2.ndx < {}".format(second_ndx)
     return "cd {}; {}; {}".format(job.workspace(), convert, ndx)
     
 
@@ -333,7 +333,7 @@ def convert_and_ndx(job):
 @flow.cmd
 def mdrun_em(job):
     em_mdp_path = pathlib.Path(signac.get_project().root_directory() + "/src/util/mdp_files/em.mdp")
-    grompp = "gmx_sp grompp -f {} -c minimize.gro -p init.top -n init2.ndx -o em.tpr -maxwarn 1".format(em_mdp_path)
+    grompp = "gmx_dp grompp -f {} -c minimize.gro -p init.top -n init2.ndx -o em.tpr -maxwarn 1".format(em_mdp_path)
     em = _mdrun_str("em")
     return "cd {}; {}; srun -n 1 {}".format(job.workspace(), grompp, em)
 
@@ -345,7 +345,7 @@ def mdrun_em(job):
 @flow.cmd
 def mdrun_nvt(job):
     nvt_mdp_path = pathlib.Path(signac.get_project().root_directory() + "/src/util/mdp_files/nvt.mdp")
-    grompp = "gmx_sp grompp -f {} -c em.gro -p init.top -n init2.ndx -o nvt.tpr -maxwarn 1".format(nvt_mdp_path)
+    grompp = "gmx_dp grompp -f {} -c em.gro -p init.top -n init2.ndx -o nvt.tpr -maxwarn 1".format(nvt_mdp_path)
     nvt = _mdrun_str("nvt")
     return "cd {}; {}; srun -n 1 {}".format(job.workspace(), grompp, nvt)
 
@@ -357,7 +357,7 @@ def mdrun_nvt(job):
 @flow.cmd
 def mdrun_compress(job):
     compress_mdp_path = pathlib.Path(signac.get_project().root_directory() + "/src/util/mdp_files/compress.mdp")
-    grompp = "gmx_sp grompp -f {} -c nvt.gro -p init.top -n init2.ndx -o compress.tpr -maxwarn 2".format(compress_mdp_path)
+    grompp = "gmx_dp grompp -f {} -c nvt.gro -p init.top -n init2.ndx -o compress.tpr -maxwarn 2".format(compress_mdp_path)
     compress = _mdrun_str("compress")
     return "cd {}; {}; srun -n 1 -v {} -px compress_pullx.xvg -pf compress_pullf.xvg".format(job.workspace(), grompp, compress)
 
@@ -370,10 +370,13 @@ def mdrun_compress(job):
 @Project.post(shear_5nN_completed)
 @flow.cmd
 def mdrun_shear_5nN(job):
-    shear_5nN_mdp_path = pathlib.Path(signac.get_project().root_directory() + "/src/util/mdp_files/shear_5nN.mdp")
-    grompp = "gmx_sp grompp -f {} -c compress.gro -p init.top -n init2.ndx -o shear_5nN.tpr -maxwarn 1".format(shear_5nN_mdp_path)
+    if not job.isfile('shear_5nN.tpr'):
+        shear_5nN_mdp_path = pathlib.Path(signac.get_project().root_directory() + "/src/util/mdp_files/shear_5nN.mdp")
+        grompp = "gmx_dp grompp -f {} -c compress.gro -p init.top -n init2.ndx -o shear_5nN.tpr -maxwarn 1; ".format(shear_5nN_mdp_path)
+    else:
+        grompp = ""
     shear = _mdrun_str("shear_5nN")
-    return "cd {}; {}; srun -n 1 -v {} -px shear_5nN_pullx.xvg -pf shear_5nN_pullf.xvg".format(job.workspace(), grompp, shear)
+    return "cd {}; {}srun -n 1 -v {} -px shear_5nN_pullx.xvg -pf shear_5nN_pullf.xvg".format(job.workspace(), grompp, shear)
 
 
 @Project.operation
@@ -381,10 +384,13 @@ def mdrun_shear_5nN(job):
 @Project.post(shear_15nN_completed)
 @flow.cmd
 def mdrun_shear_15nN(job):
-    shear_15nN_mdp_path = pathlib.Path(signac.get_project().root_directory() + "/src/util/mdp_files/shear_15nN.mdp")
-    grompp = "gmx_sp grompp -f {} -c compress.gro -p init.top -n init2.ndx -o shear_15nN.tpr -maxwarn 1".format(shear_15nN_mdp_path)
+    if not job.isfile('shear_15nN.tpr'):
+        shear_15nN_mdp_path = pathlib.Path(signac.get_project().root_directory() + "/src/util/mdp_files/shear_15nN.mdp")
+        grompp = "gmx_dp grompp -f {} -c compress.gro -p init.top -n init2.ndx -o shear_15nN.tpr -maxwarn 1; ".format(shear_15nN_mdp_path)
+    else:
+        grompp = ""
     shear = _mdrun_str("shear_15nN")
-    return "cd {}; {}; srun -n 1 -v {} -px shear_15nN_pullx.xvg -pf shear_15nN_pullf.xvg".format(job.workspace(), grompp, shear)
+    return "cd {}; {}srun -n 1 -v {} -px shear_15nN_pullx.xvg -pf shear_15nN_pullf.xvg".format(job.workspace(), grompp, shear)
 
 
 @Project.operation
@@ -392,10 +398,13 @@ def mdrun_shear_15nN(job):
 @Project.post(shear_25nN_completed)
 @flow.cmd
 def mdrun_shear_25nN(job):
-    shear_25nN_mdp_path = pathlib.Path(signac.get_project().root_directory() + "/src/util/mdp_files/shear_25nN.mdp")
-    grompp = "gmx_sp grompp -f {} -c compress.gro -p init.top -n init2.ndx -o shear_25nN.tpr -maxwarn 1".format(shear_25nN_mdp_path)
+    if not job.isfile('shear_25nN.tpr'):
+        shear_25nN_mdp_path = pathlib.Path(signac.get_project().root_directory() + "/src/util/mdp_files/shear_25nN.mdp")
+        grompp = "gmx_dp grompp -f {} -c compress.gro -p init.top -n init2.ndx -o shear_25nN.tpr -maxwarn 1; ".format(shear_25nN_mdp_path)
+    else:
+        grompp = ""
     shear = _mdrun_str("shear_25nN")
-    return "cd {}; {}; srun -n 1 -v {} -px shear_25nN_pullx.xvg -pf shear_25nN_pullf.xvg".format(job.workspace(), grompp, shear)
+    return "cd {}; {}srun -n 1 -v {} -px shear_25nN_pullx.xvg -pf shear_25nN_pullf.xvg".format(job.workspace(), grompp, shear)
 
 
 @Project.operation

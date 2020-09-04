@@ -19,28 +19,28 @@ terminal_groups_A = ['acetyl','amino','benzoicacid','biphenyl','carboxyl',
                      'ethylene','fluorophenyl','formyl','hydroxyl', 'isopropyl',
                      'isopropylbenzene','methoxy', 'methyl', 'nitro', 'nitrophenyl',
                      'pentafluorophenyl','perfluoromethyl','phenol','phenyl',
-                     'pyrrole', 'toluene','triazole']
+                     'pyrrole', 'toluene']
 
 terminal_groups_B = ['acetyl','amino','benzoicacid','biphenyl','carboxyl',
                      'cyano','cyclopropyl','difluoromethyl','dihydroxyphenyl', 
                      'ethylene','fluorophenyl','formyl','hydroxyl', 'isopropyl',
                      'isopropylbenzene','methoxy', 'methyl', 'nitro', 'nitrophenyl',
                      'pentafluorophenyl','perfluoromethyl','phenol','phenyl',
-                     'pyrrole', 'toluene','triazole']
+                     'pyrrole', 'toluene']
 
 terminal_groups_C = ['acetyl','amino','benzoicacid','biphenyl','carboxyl',
                      'cyano','cyclopropyl','difluoromethyl','dihydroxyphenyl', 
                      'ethylene','fluorophenyl','formyl','hydroxyl', 'isopropyl',
                      'isopropylbenzene','methoxy', 'methyl', 'nitro', 'nitrophenyl',
                      'pentafluorophenyl','perfluoromethyl','phenol','phenyl',
-                     'pyrrole', 'toluene','triazole']
+                     'pyrrole', 'toluene']
 
 terminal_groups_D = ['acetyl','amino','benzoicacid','biphenyl','carboxyl',
                      'cyano','cyclopropyl','difluoromethyl','dihydroxyphenyl', 
                      'ethylene','fluorophenyl','formyl','hydroxyl', 'isopropyl',
                      'isopropylbenzene','methoxy', 'methyl', 'nitro', 'nitrophenyl',
                      'pentafluorophenyl','perfluoromethyl','phenol','phenyl',
-                     'pyrrole', 'toluene','triazole']
+                     'pyrrole', 'toluene']
 
 
 # Initialize the project

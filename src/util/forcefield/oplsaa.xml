@@ -2077,6 +2077,7 @@
   <Angle class1="OH" class2="SI" class3="OH" angle="1.919862" k="502.08"/>
   <Angle class1="OG" class2="SI" class3="CT" angle="1.7453" k="502.08"/>
   <Angle class1="CY" class2="CT" class3="CT" angle="1.966986067" k="488.273"/>
+  <Angle class1="CT" class2="CA" class3="HA" angle="2.09439510239" k="292.88"/>
  </HarmonicAngleForce>
  <RBTorsionForce>
   <Proper type1="opls_965" type2="opls_961" type3="opls_136" type4="opls_136" c0="0.968596" c1="2.905788" c2="0.0" c3="-3.874384" c4="0.0" c5="0.0"/>
@@ -3146,6 +3147,7 @@
   <Proper class1="CA" class2="C!" class3="CA" class4="HA" c0="30.334" c1="0.0" c2="-30.334" c3="0.0" c4="0.0" c5="0.0"/>
   <Proper class1="C!" class2="C!" class3="CA" class4="HA" c0="30.334" c1="0.0" c2="-30.334" c3="0.0" c4="0.0" c5="0.0"/>
   <Proper class1="HA" class2="CA" class3="C!" class4="C!" c0="30.334" c1="0.0" c2="-30.334" c3="0.0" c4="0.0" c5="0.0"/>
+  <Proper class1="" class2="CT" class3="CA" class4="" c0="30.334" c1="0.0" c2="-30.334" c3="0.0" c4="0.0" c5="0.0"/>
  </RBTorsionForce>
  <PeriodicTorsionForce>
   <Improper class1="C" class2="O" class3="" class4="" periodicity1="2" phase1="3.141592653589793" k1="43.93200"/>

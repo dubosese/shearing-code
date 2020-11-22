@@ -7,7 +7,7 @@
 #SBATCH --time={{ walltime|format_timedelta }}
 #SBATCH -C knl
 #SBATCH -q {{ queue }}
-#SBATCH --mail-type=END,FAIL
+#SBATCH --mail-type=FAIL
 
 module unload gromacs lammps
 module load gromacs/2020.2.knl lammps openmpi

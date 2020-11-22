@@ -827,7 +827,7 @@
   <Type name="opls_1010" class="EP" element="_EP" mass="0.00"/>
   <Type name="opls_1011" class="CT" element="C" mass="12.01100" def="[C;X3;r6]1[C;X3;r6][C;X3;r6][C;X3;r6]([C;X3](O)O)[C;X3;r6][C;X3;r6]1" desc="benzoicacid" overrides="opls_145"/>
   <Type name="opls_520B" class="NC" element="N" mass="14.0067" desc="N3/top N in triazole" def="[N;X2;r5]1[C;X3;r5][N;X2;r5][N;X3;r5][C;X3;r5]1"/>
-  <Type name="opls_558B" class="CR" element="C" mass="12.011" desc="C2/C4 in triazole" def="[C;X3;r5](N)N"/>
+  <Type name="opls_558B" class="CR" element="C" mass="12.011" desc="C2/C4 in triazole" def="[C;X3;r5]([N;r5])[N;r5]" overrides="opls_245"/>
   <Type name="opls_245B" class="CT" element="C" mass="12.011" desc="C on N: N1 of triazole, QUESTIONABLE" def="[C;X4][N;X3;r5]" overrides="opls_245"/>
  </AtomTypes>
  <HarmonicBondForce>
@@ -3691,7 +3691,7 @@
   <Atom type="opls_517" charge="-0.03" sigma="0.355" epsilon="0.317984"/>
   <Atom type="opls_518" charge="0.085" sigma="0.355" epsilon="0.317984"/>
   <Atom type="opls_520" charge="-0.678" sigma="0.325" epsilon="0.71128"/>
-  <Atom type="opls_520B" charge="-0.563" sigma="0.325" epsilon="0.71128"/>
+  <Atom type="opls_520B" charge="-0.49" sigma="0.325" epsilon="0.71128"/>
   <Atom type="opls_521" charge="0.473" sigma="0.355" epsilon="0.29288"/>
   <Atom type="opls_522" charge="-0.447" sigma="0.355" epsilon="0.29288"/>
   <Atom type="opls_523" charge="0.227" sigma="0.355" epsilon="0.29288"/>
@@ -3719,8 +3719,8 @@
   <Atom type="opls_545" charge="0.317" sigma="1.0" epsilon="0.0"/>
   <Atom type="opls_546" charge="0.155" sigma="0.242" epsilon="0.12552"/>
   <Atom type="opls_547" charge="0.118" sigma="0.242" epsilon="0.12552"/>
-  <Atom type="opls_548" charge="-0.059" sigma="0.325" epsilon="0.71128"/>
-  <Atom type="opls_549" charge="-0.491" sigma="0.325" epsilon="0.71128"/>
+  <Atom type="opls_548" charge="0.03" sigma="0.325" epsilon="0.71128"/>
+  <Atom type="opls_549" charge="-0.43" sigma="0.325" epsilon="0.71128"/>
   <Atom type="opls_550" charge="0.246" sigma="0.355" epsilon="0.29288"/>
   <Atom type="opls_551" charge="-0.32" sigma="0.355" epsilon="0.29288"/>
   <Atom type="opls_552" charge="-0.034" sigma="0.355" epsilon="0.29288"/>
@@ -3730,7 +3730,7 @@
   <Atom type="opls_556" charge="0.135" sigma="0.242" epsilon="0.12552"/>
   <Atom type="opls_557" charge="-0.257" sigma="0.325" epsilon="0.71128"/>
   <Atom type="opls_558" charge="0.275" sigma="0.355" epsilon="0.29288"/>
-  <Atom type="opls_558B" charge="0.275" sigma="0.355" epsilon="0.29288"/>
+  <Atom type="opls_558B" charge="0.295" sigma="0.355" epsilon="0.29288"/>
   <Atom type="opls_559" charge="-0.563" sigma="0.325" epsilon="0.71128"/>
   <Atom type="opls_560" charge="0.185" sigma="0.355" epsilon="0.29288"/>
   <Atom type="opls_561" charge="-0.286" sigma="0.355" epsilon="0.29288"/>
